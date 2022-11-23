@@ -112,6 +112,44 @@ def add_title():
         return make_response(jsonify({"error": "Missing form data"}), 404)
 
 
+@app.route("/api/v1.0/titles/<string:id>", methods=["PUT"])
+def edit_title(id):
+    if "title" in request.form and "type" in request.form and "listed_in" in request.form \
+            and "description" in request.form:
+        now = datetime.datetime.now()
+        result = media.update_one(
+            {"_id": ObjectId(id)},
+            {
+                "$set": {
+                    "title": request.form["title"],
+                    "type": request.form["type"],
+                    "date_added": now.strftime("%d %B, %Y"),
+                    "listed_in": request.form["listed_in"],
+                    "description": request.form["description"],
+                    "reviews": []
+                }
+            }
+        )
+        if result.matched_count == 1:
+            edit_title_link = "http://localhost:5000/api/v1.0/titles/" + id
+            return make_response(jsonify({"url": edit_title_link}), 200)
+        else:
+            return make_response(jsonify({"error": "Invalid title ID"}), 404)
+    else:
+        return make_response(jsonify({"error": "Missing form data"}), 404)
+
+
+@app.route("/api/v1.0/titles/<string:id>", methods=["DELETE"])
+def delete_title(id):
+    result = media.delete_one({"_id": ObjectId(id)})
+    if result.deleted_count == 1:
+        return make_response(jsonify({}), 204)
+    else:
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
