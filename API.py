@@ -1,4 +1,8 @@
-from bson import ObjectId
+import json
+import string
+from datetime import datetime
+import datetime
+from bson import ObjectId, json_util
 from flask import Flask, request, jsonify, make_response
 from pymongo import MongoClient
 
@@ -20,12 +24,13 @@ def show_all_titles():
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "_id": 0}},
+        {"$project": {"title": 1}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
 
     for title in media.aggregate(pipeline):
+        title['_id'] = str(title['_id'])
         data_to_return.append(title)
 
     return make_response(jsonify(data_to_return), 200)
@@ -33,16 +38,12 @@ def show_all_titles():
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["GET"])
 def show_one_title(id):
-    title = media.aggregate([{"$match": {"_id": ObjectId(id)}}])
-
+    title = media.find_one({"_id": ObjectId(id)})
     if title is not None:
-        for title in media.aggregate(pipeline=[{"$project": {"_id": 0}}, ]):
-            for review in title["reviews"]:
-                review["_id"] = str(review["_id"])
-            return make_response(jsonify(title), 200)
+        for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}, ]):
+            return make_response(jsonify(title, 200))
     else:
         return make_response(jsonify({"error": "Invalid business ID"}), 404)
-
 
 @app.route("/api/v1.0/movies", methods=["GET"])
 def show_all_movies():
@@ -86,6 +87,28 @@ def show_all_series():
         data_to_return.append(title)
 
     return make_response(jsonify(data_to_return), 200)
+
+
+@app.route("/api/v1.0/titles", methods=["POST"])
+def add_title():
+    if "title" in request.form and "type" in request.form and "listed_in" in request.form \
+            and "description" in request.form:
+        now = datetime.datetime.now()
+        new_title = {
+            "title": request.form["title"],
+            "type": request.form["type"],
+            "date_added": now.strftime("%d %B, %Y"),
+            "listed_in": request.form["listed_in"],
+            "description": request.form["description"],
+            "reviews": []
+        }
+        new_title_id = media.insert_one(new_title)
+        new_title_link = "http://localhost:5000/api/v1.0/titles/" + str(new_title_id.inserted_id)
+        return make_response(jsonify({"url": new_title_link}), 201)
+
+    else:
+        return make_response(jsonify({"error": "Missing form data"}), 404)
+
 
 
 if __name__ == "__main__":
