@@ -56,7 +56,8 @@ def show_all_movies():
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "_id": 0, "type": "Movie"}},
+        {"$project": {"title": 1, "_id": 0, "type": 1}},
+        {"$match": {"type": "Movie"}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
@@ -78,7 +79,8 @@ def show_all_series():
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "_id": 0, "type": "TV Show"}},
+        {"$project": {"title": 1, "_id": 0, "type": 1}},
+        {"$match": {"type": "TV Show"}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
