@@ -1,16 +1,82 @@
 import json
-import string
-from datetime import datetime
-import datetime
-from bson import ObjectId, json_util
+
+import bcrypt
 from flask import Flask, request, jsonify, make_response
 from pymongo import MongoClient
+from bson import ObjectId, json_util
+from datetime import datetime
+import string
+import jwt
+import datetime
+from functools import wraps
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'mysecret'
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 db = client.mydb
 media = db.media
+users = db.users
+blacklist = db.blacklist
+
+
+def jwt_required(func):
+    @wraps(func)
+    def jwt_required_wrapper(*args, **kwargs):
+        token = None
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'])
+        except:
+            return jsonify({'message': 'Token is invalid'}), 401
+
+        return func(*args, **kwargs)
+
+    return jwt_required_wrapper
+
+
+@app.route('/api/v1.0/login', methods=['GET'])
+def login():
+    auth = request.authorization
+    if auth:
+        user = users.find_one({'username': auth.username})
+        if user is not None:
+            if bcrypt.checkpw(bytes(auth.password, 'UTF-8'), user["password"]):
+                token = jwt.encode(
+                    {'user': auth.username,
+                     'admin': user["admin"],
+                     'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+                     }, app.config['SECRET_KEY'])
+                return make_response(jsonify({'token': token.decode('UTF-8')}), 200)
+            else:
+                return make_response(jsonify({'message': 'Bad password'}), 401)
+        else:
+            return make_response(jsonify({'message': 'Bad username'}), 401)
+    return make_response(jsonify({'message': 'Authentication required'}), 401)
+
+
+@app.route('/api/v1.0/logout', methods=["GET"])
+@jwt_required
+def logout():
+    token = request.headers['x-access-token']
+    blacklist.insert_one({"token": token})
+    return make_response(jsonify({'message': 'Logout successful'}), 200)
+
+
+def admin_required(func):
+    @wraps(func)
+    def admin_required_wrapper(*args, **kwargs):
+        token = request.headers['x-access-token']
+        data = jwt.decode(token, app.config['SECRET_KEY'])
+        if data["admin"]:
+            return func(*args, **kwargs)
+        else:
+            return make_response(jsonify({'message': 'Admin access required'}), 401)
+    return admin_required_wrapper
 
 
 @app.route("/api/v1.0/titles", methods=["GET"])
@@ -39,14 +105,14 @@ def show_all_titles():
 @app.route("/api/v1.0/titles/<string:id>", methods=["GET"])
 def show_one_title(id):
     if len(id) != 24 or not all(c in string.hexdigits for c in id):
-        return make_response(jsonify({"error": "Invalid business ID"}), 404)
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
     title = media.find_one({"_id": ObjectId(id)})
     if title is not None:
         for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}, ]):
             return make_response(jsonify(title, 200))
     else:
-        return make_response(jsonify({"error": "Invalid business ID"}), 404)
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
 
 @app.route("/api/v1.0/movies", methods=["GET"])
@@ -96,6 +162,7 @@ def show_all_series():
 
 
 @app.route("/api/v1.0/titles", methods=["POST"])
+@jwt_required
 def add_title():
     if "title" in request.form and "type" in request.form and "listed_in" in request.form \
             and "description" in request.form:
@@ -117,6 +184,7 @@ def add_title():
 
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["PUT"])
+@jwt_required
 def edit_title(id):
     if "title" in request.form and "type" in request.form and "listed_in" in request.form \
             and "description" in request.form:
@@ -142,6 +210,8 @@ def edit_title(id):
 
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["DELETE"])
+@jwt_required
+@admin_required
 def delete_title(id):
     result = media.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 1:
@@ -186,6 +256,7 @@ def get_one_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
+@jwt_required
 def add_new_review(id):
     now = datetime.datetime.now()
     new_review = {
@@ -206,6 +277,7 @@ def add_new_review(id):
 
 
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["PUT"])
+@jwt_required
 def edit_review(title_id, review_id):
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
@@ -227,6 +299,8 @@ def edit_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["DELETE"])
+@jwt_required
+@admin_required
 def delete_review(title_id, review_id):
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
