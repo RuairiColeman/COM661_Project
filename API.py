@@ -110,7 +110,9 @@ def show_one_title(id):
     title = media.find_one({"_id": ObjectId(id)})
     if title is not None:
         for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}, ]):
-            return make_response(jsonify(title, 200))
+            for review in title["reviews"]:
+                review["_id"] = str(review["_id"])
+        return make_response(jsonify(title, 200))
     else:
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
@@ -256,14 +258,12 @@ def get_one_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
-@jwt_required
 def add_new_review(id):
     now = datetime.datetime.now()
-    user = users.find_one({'username': request.authorization.username})
     new_review = {
         "_id": ObjectId(),
         "date": now.strftime("%Y-%m-%d, %H:%M:%S"),
-        "name": str(user["username"]),
+        "name": request.form["name"],
         "text": request.form["text"],
         "stars": request.form["stars"]
     }
@@ -280,19 +280,16 @@ def add_new_review(id):
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["PUT"])
 @jwt_required
 def edit_review(title_id, review_id):
-    user = users.find_one({'username': request.authorization.username})
-
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
     elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
         return make_response(jsonify({"error": "bad review ID"}), 404)
     else:
         edited_review = {
-            "reviews.$.name": str(user["username"]),
             "reviews.$.text": request.form["text"],
             "reviews.$.stars": request.form["stars"]
         }
-        if "text" in request.form and "stars" in request.form:
+        if "name" in request.form and "text" in request.form and "stars" in request.form:
             media.update_one(
                 {"reviews._id": ObjectId(review_id)},
                 {"$set": edited_review}
