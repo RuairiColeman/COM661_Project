@@ -38,6 +38,9 @@ def show_all_titles():
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["GET"])
 def show_one_title(id):
+    if len(id) != 24 or not all(c in string.hexdigits for c in id):
+        return make_response(jsonify({"error": "Invalid business ID"}), 404)
+
     title = media.find_one({"_id": ObjectId(id)})
     if title is not None:
         for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}, ]):
@@ -149,12 +152,16 @@ def delete_title(id):
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["GET"])
 def show_all_reviews(id):
+    if len(id) != 24 or not all(c in string.hexdigits for c in id):
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+
     data_to_return = []
-    pipeline = [{"$match": {"_id": ObjectId(id)}},
-                {"$project": {"reviews": 1, "_id": 0}},
-                {"$unwind": '$reviews'},
-                {"$sort": {"reviews.date": -1}}
-                ]
+    pipeline = [
+        {"$match": {"_id": ObjectId(id)}},
+        {"$project": {"reviews": 1, "_id": 0}},
+        {"$unwind": '$reviews'},
+        {"$sort": {"reviews.date": -1}}
+    ]
 
     for title in media.aggregate(pipeline):
         data_to_return.append(title)
@@ -162,15 +169,20 @@ def show_all_reviews(id):
     return make_response(json.loads(json_util.dumps(data_to_return)), 200)
 
 
-@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["GET"])
-def get_one_review(b_id, r_id):
-    title = media.find_one({"reviews._id": ObjectId(r_id)}, {"_id": 0, "reviews.$": 1})
-
-    if title is not None:
-        title['reviews'][0]['_id'] = str(title['reviews'][0]['_id'])
-        return make_response(jsonify(title['reviews'][0]), 200)
+@app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["GET"])
+def get_one_review(title_id, review_id):
+    if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+    elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
+        return make_response(jsonify({"error": "bad review ID"}), 404)
     else:
-        return make_response(jsonify({"error": "Invalid business ID or review ID"}), 404)
+        title = media.find_one({"reviews._id": ObjectId(review_id)}, {"_id": 0, "reviews.$": 1})
+
+        if title is not None:
+            title['reviews'][0]['_id'] = str(title['reviews'][0]['_id'])
+            return make_response(jsonify(title['reviews'][0]), 200)
+        else:
+            return make_response(jsonify({"error": "Invalid title ID or review ID"}), 404)
 
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
@@ -193,30 +205,40 @@ def add_new_review(id):
     return make_response(jsonify({"url": new_review_link}), 201)
 
 
-@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["PUT"])
-def edit_review(b_id, r_id):
-    edited_review = {
-        "reviews.$.name": request.form["name"],
-        "reviews.$.text": request.form["text"],
-        "reviews.$.stars": request.form["stars"]
-    }
-    if "name" in request.form and "text" in request.form and "stars" in request.form:
+@app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["PUT"])
+def edit_review(title_id, review_id):
+    if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+    elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
+        return make_response(jsonify({"error": "bad review ID"}), 404)
+    else:
+        edited_review = {
+            "reviews.$.name": request.form["name"],
+            "reviews.$.text": request.form["text"],
+            "reviews.$.stars": request.form["stars"]
+        }
+        if "name" in request.form and "text" in request.form and "stars" in request.form:
+            media.update_one(
+                {"reviews._id": ObjectId(review_id)},
+                {"$set": edited_review}
+            )
+            edit_review_url = "http://localhost:5000/api/v1.0/titles/" + title_id + "/reviews/" + review_id
+            return make_response(jsonify({"url": edit_review_url}, 200))
+
+
+@app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["DELETE"])
+def delete_review(title_id, review_id):
+    if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+    elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
+        return make_response(jsonify({"error": "bad review ID"}), 404)
+    else:
         media.update_one(
-            {"reviews._id": ObjectId(r_id)},
-            {"$set": edited_review}
+            {"_id": ObjectId(title_id)},
+            {"$pull": {"reviews": {"_id": ObjectId(review_id)}}}
+
         )
-        edit_review_url = "http://localhost:5000/api/v1.0/titles/" + b_id + "/reviews/" + r_id
-        return make_response(jsonify({"url": edit_review_url}, 200))
-
-
-@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["DELETE"])
-def delete_review(b_id, r_id):
-    media.update_one(
-        {"_id": ObjectId(b_id)},
-        {"$pull": {"reviews": {"_id": ObjectId(r_id)}}}
-
-    )
-    return make_response(jsonify({}), 204)
+        return make_response(jsonify({}), 204)
 
 
 if __name__ == "__main__":
