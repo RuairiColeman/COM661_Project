@@ -45,6 +45,7 @@ def show_one_title(id):
     else:
         return make_response(jsonify({"error": "Invalid business ID"}), 404)
 
+
 @app.route("/api/v1.0/movies", methods=["GET"])
 def show_all_movies():
     page_num, page_size = 1, 10
@@ -116,14 +117,12 @@ def add_title():
 def edit_title(id):
     if "title" in request.form and "type" in request.form and "listed_in" in request.form \
             and "description" in request.form:
-        now = datetime.datetime.now()
         result = media.update_one(
             {"_id": ObjectId(id)},
             {
                 "$set": {
                     "title": request.form["title"],
                     "type": request.form["type"],
-                    "date_added": now.strftime("%d %B, %Y"),
                     "listed_in": request.form["listed_in"],
                     "description": request.form["description"],
                     "reviews": []
@@ -148,7 +147,76 @@ def delete_title(id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
 
+@app.route("/api/v1.0/titles/<string:id>/reviews", methods=["GET"])
+def show_all_reviews(id):
+    data_to_return = []
+    pipeline = [{"$match": {"_id": ObjectId(id)}},
+                {"$project": {"reviews": 1, "_id": 0}},
+                {"$unwind": '$reviews'},
+                {"$sort": {"reviews.date": -1}}
+                ]
 
+    for title in media.aggregate(pipeline):
+        data_to_return.append(title)
+
+    return make_response(json.loads(json_util.dumps(data_to_return)), 200)
+
+
+@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["GET"])
+def get_one_review(b_id, r_id):
+    title = media.find_one({"reviews._id": ObjectId(r_id)}, {"_id": 0, "reviews.$": 1})
+
+    if title is not None:
+        title['reviews'][0]['_id'] = str(title['reviews'][0]['_id'])
+        return make_response(jsonify(title['reviews'][0]), 200)
+    else:
+        return make_response(jsonify({"error": "Invalid business ID or review ID"}), 404)
+
+
+@app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
+def add_new_review(id):
+    now = datetime.datetime.now()
+    new_review = {
+        "_id": ObjectId(),
+        "date": now.strftime("%Y-%m-%d, %H:%M:%S"),
+        "name": request.form["name"],
+        "text": request.form["text"],
+        "stars": request.form["stars"]
+    }
+    media.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$push": {"reviews": new_review}
+        }
+    )
+    new_review_link = "http://localhost:5000/api/v1.0/titles/" + id + "/reviews/" + str(new_review["_id"])
+    return make_response(jsonify({"url": new_review_link}), 201)
+
+
+@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["PUT"])
+def edit_review(b_id, r_id):
+    edited_review = {
+        "reviews.$.name": request.form["name"],
+        "reviews.$.text": request.form["text"],
+        "reviews.$.stars": request.form["stars"]
+    }
+    if "name" in request.form and "text" in request.form and "stars" in request.form:
+        media.update_one(
+            {"reviews._id": ObjectId(r_id)},
+            {"$set": edited_review}
+        )
+        edit_review_url = "http://localhost:5000/api/v1.0/titles/" + b_id + "/reviews/" + r_id
+        return make_response(jsonify({"url": edit_review_url}, 200))
+
+
+@app.route("/api/v1.0/titles/<string:b_id>/reviews/<string:r_id>", methods=["DELETE"])
+def delete_review(b_id, r_id):
+    media.update_one(
+        {"_id": ObjectId(b_id)},
+        {"$pull": {"reviews": {"_id": ObjectId(r_id)}}}
+
+    )
+    return make_response(jsonify({}), 204)
 
 
 if __name__ == "__main__":
