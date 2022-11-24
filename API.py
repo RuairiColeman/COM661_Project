@@ -259,10 +259,11 @@ def get_one_review(title_id, review_id):
 @jwt_required
 def add_new_review(id):
     now = datetime.datetime.now()
+    user = users.find_one({'username': request.authorization.username})
     new_review = {
         "_id": ObjectId(),
         "date": now.strftime("%Y-%m-%d, %H:%M:%S"),
-        "name": request.form["name"],
+        "name": str(user["username"]),
         "text": request.form["text"],
         "stars": request.form["stars"]
     }
@@ -279,17 +280,19 @@ def add_new_review(id):
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["PUT"])
 @jwt_required
 def edit_review(title_id, review_id):
+    user = users.find_one({'username': request.authorization.username})
+
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
     elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
         return make_response(jsonify({"error": "bad review ID"}), 404)
     else:
         edited_review = {
-            "reviews.$.name": request.form["name"],
+            "reviews.$.name": str(user["username"]),
             "reviews.$.text": request.form["text"],
             "reviews.$.stars": request.form["stars"]
         }
-        if "name" in request.form and "text" in request.form and "stars" in request.form:
+        if "text" in request.form and "stars" in request.form:
             media.update_one(
                 {"reviews._id": ObjectId(review_id)},
                 {"$set": edited_review}
