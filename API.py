@@ -2,6 +2,7 @@ import json
 
 import bcrypt
 from flask import Flask, request, jsonify, make_response
+from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId, json_util
 from datetime import datetime
@@ -11,6 +12,7 @@ import datetime
 from functools import wraps
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SECRET_KEY'] = 'mysecret'
 
@@ -90,7 +92,7 @@ def show_all_titles():
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1}},
+        {"$project": {"title": 1, "type": 1, "listed_in": 1}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
@@ -107,12 +109,13 @@ def show_one_title(id):
     if len(id) != 24 or not all(c in string.hexdigits for c in id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
-    title = media.find_one({"_id": ObjectId(id)})
+    title = media.aggregate([{"$match": {"_id": ObjectId(id)}}])
+
     if title is not None:
-        for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}, ]):
+        for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}]):
             for review in title["reviews"]:
                 review["_id"] = str(review["_id"])
-        return make_response(jsonify(title, 200))
+            return make_response(jsonify([title]), 200)
     else:
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
@@ -237,7 +240,6 @@ def show_all_reviews(id):
 
     for title in media.aggregate(pipeline):
         data_to_return.append(title)
-
     return make_response(json.loads(json_util.dumps(data_to_return)), 200)
 
 
