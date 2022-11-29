@@ -1,0 +1,21 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div *ngFor = "let title of title_list | async">
+                <div class="card text-white bg-primary mb-3"style = "width: 50rem; margin: auto">
+                    <div class="col">
+                    <div class="card-header">
+                        {{ title.title }}
+                    </div>
+                    </div>
+                    <div class="card-body">
+                        {{ title.type }}
+                    </div>
+                    <div class="card-footer">
+                        Genre: {{ title.listed_in }}
+                    </div>
+                 </div>
+            </div>
+        </div> <!-- col -->
+    </div> <!-- row -->
+</div> <!-- container -->

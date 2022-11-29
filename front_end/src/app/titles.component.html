@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <div *ngFor="let title of title_list | async">
+        <div class="card text-white bg-primary mb-3" style="cursor: pointer"
+             [routerLink]="['/titles', title._id]">
+          <div class="col">
+            <div class="card-header">
+              {{ title.title }}
+            </div>
+          </div>
+          <div class="card-body">
+            This title is based in {{ title.type }}
+          </div>
+          <div class="card-footer">
+            {{ title.listed_in }} reviews available
+          </div>
+        </div>
+      </div>
+    </div> <!-- col -->
+  </div> <!-- row -->
+  <div class="row">
+    <div class="col-sm-6">
+      <button class="btn btn-primary"
+              (click)="previousPage()">Previous
+      </button>
+    </div>
+    <div class="col-sm-6 text-end">
+      <button class="btn btn-primary"
+              (click)="nextPage()">Next
+      </button>
+    </div>
+  </div>
+</div> <!-- container -->
