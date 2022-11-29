@@ -9,6 +9,7 @@ import {WebService} from './web.service';
 import {HttpClientModule} from '@angular/common/http';
 import {RouterModule} from '@angular/router';
 import {TitleComponent} from './title.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 var routes: any = [
   {
@@ -30,7 +31,7 @@ var routes: any = [
     AppComponent, TitlesComponent, HomeComponent, TitleComponent
   ],
   imports: [
-    BrowserModule, HttpClientModule, RouterModule.forRoot(routes)
+    BrowserModule, HttpClientModule, RouterModule.forRoot(routes), ReactiveFormsModule
   ],
   providers: [WebService],
   bootstrap: [AppComponent]
