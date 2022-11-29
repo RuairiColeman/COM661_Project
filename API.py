@@ -143,6 +143,28 @@ def show_all_movies():
     return make_response(jsonify(data_to_return), 200)
 
 
+@app.route("/api/v1.0/<string:genre>", methods=["GET"])
+def show_genre(genre):
+    page_num, page_size = 1, 10
+    if request.args.get('pn'):
+        page_num = int(request.args.get('pn'))
+    if request.args.get('ps'):
+        page_size = int(request.args.get('ps'))
+    page_start = (page_size * (page_num - 1))
+
+    data_to_return = []
+    pipeline = [
+        {"$project": {"_id": 0}},
+        {"$match": {"listed_in": genre}},
+        {"$skip": page_start},
+        {"$limit": page_size}
+    ]
+
+    for title in media.aggregate(pipeline):
+        data_to_return.append(title)
+
+    return make_response(jsonify(data_to_return), 200)
+
 @app.route("/api/v1.0/series", methods=["GET"])
 def show_all_series():
     page_num, page_size = 1, 10
@@ -228,19 +250,20 @@ def delete_title(id):
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["GET"])
 def show_all_reviews(id):
     if len(id) != 24 or not all(c in string.hexdigits for c in id):
-        return make_response(jsonify({"error": "Invalid title ID"}), 404)
+        return make_response(jsonify({"error": "Invalid business ID"}), 404)
 
     data_to_return = []
-    pipeline = [
-        {"$match": {"_id": ObjectId(id)}},
-        {"$project": {"reviews": 1, "_id": 0}},
-        {"$unwind": '$reviews'},
-        {"$sort": {"reviews.date": -1}}
-    ]
+    title = media.find_one(
+        {"_id": ObjectId(id)}, {"reviews": 1, "_id": 0}
+    )
 
-    for title in media.aggregate(pipeline):
-        data_to_return.append(title)
-    return make_response(json.loads(json_util.dumps(data_to_return)), 200)
+    for review in title["reviews"]:
+        review["_id"] = str(review["_id"])
+        data_to_return.append(review)
+
+    sorted_data_by_date = sorted(data_to_return, key=lambda k: k['date'], reverse=True)
+
+    return make_response(jsonify(sorted_data_by_date), 200)
 
 
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["GET"])
