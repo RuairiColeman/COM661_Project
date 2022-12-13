@@ -1,7 +1,7 @@
 <div class="container" style="margin-top:70px;">
   <div class="row">
     <div class="col">
-      <div *ngFor="let title of title_list | async">
+      <div *ngFor="let title of movie_list | async">
         <div class="card text-white bg-primary mb-3" style="cursor: pointer"
              [routerLink]="['/titles/'+ title._id]">
           <div class="col">
@@ -10,12 +10,12 @@
             </div>
           </div>
           <div class="card-body">
-            {{ title.type }}
+            {{ title.description }}
           </div>
           <div class="card-footer">
             {{ title.listed_in }}
           </div>
-          <button type="submit" class="btn btn-primary" [routerLink]="['/titles/'+ title._id]+'/reviews'">Reviews</button>
+
         </div>
       </div>
     </div> <!-- col -->

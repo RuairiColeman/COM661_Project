@@ -12,6 +12,12 @@ export class WebService {
   getTitles(page: number) {
     return this.http.get('http://localhost:5000/api/v1.0/titles?pn=' + page);
   }
+  getMovies(page: number) {
+    return this.http.get('http://localhost:5000/api/v1.0/movies?pn=' + page);
+  }
+  getSeries(page: number) {
+    return this.http.get('http://localhost:5000/api/v1.0/series?pn=' + page);
+  }
 
   getTitle(id: any) {
     this.titleID = id;

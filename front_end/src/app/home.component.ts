@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import {Component, Injectable} from '@angular/core';
+import {AuthService} from '@auth0/auth0-angular';
 
 @Component({
- selector: 'home',
- templateUrl: './home.component.html',
- styleUrls: ['./home.component.css']
+  selector: 'home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
 
-export class HomeComponent{}
+export class HomeComponent {
+  constructor(public authService: AuthService) {}
+}
