@@ -13,7 +13,8 @@ import {AuthModule} from '@auth0/auth0-angular';
 import {NavComponent} from './nav.component';
 import {TitleComponent} from './title.component'
 import {MoviesComponent} from './movies.component';
-import {SeriesComponent} from './series.component'
+import {SeriesComponent} from './series.component';
+import {GenreComponent} from './genre.component';
 
 var routes: any = [
   {
@@ -36,15 +37,19 @@ var routes: any = [
     path: 'movies',
     component: MoviesComponent
   },
-    {
+  {
     path: 'series',
     component: SeriesComponent
+  },
+  {
+    path: 'titles/genre/:genre',
+    component: GenreComponent
   }
 ];
 
 @NgModule({
   declarations: [
-    AppComponent, TitlesComponent, HomeComponent, ReviewsComponent, NavComponent, TitleComponent, MoviesComponent, SeriesComponent
+    AppComponent, TitlesComponent, HomeComponent, ReviewsComponent, NavComponent, TitleComponent, MoviesComponent, SeriesComponent, GenreComponent
   ],
   imports: [
     BrowserModule, HttpClientModule, RouterModule.forRoot(routes), ReactiveFormsModule,

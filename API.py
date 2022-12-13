@@ -150,19 +150,22 @@ def show_all_movies():
     return make_response(jsonify(data_to_return), 200)
 
 
-@app.route("/api/v1.0/<string:genre>", methods=["GET"])
+@app.route("/api/v1.0/titles/genre/<string:genre>", methods=["GET"])
 def show_genre(genre):
-    page_size, page_start = pagination()
 
     data_to_return = []
     pipeline = [
-        {"$project": {"_id": 0}},
-        {"$match": {"listed_in": genre}},
-        {"$skip": page_start},
-        {"$limit": page_size}
-    ]
+        {"$project": {
+            "title": 1,
+            "type": 1,
+            "listed_in": 1,
+            "description": 1}
+        },
+        {"$match": {"listed_in": genre}
+    }]
 
     for title in media.aggregate(pipeline):
+        title['_id'] = str(title['_id'])
         data_to_return.append(title)
 
     return make_response(jsonify(data_to_return), 200)

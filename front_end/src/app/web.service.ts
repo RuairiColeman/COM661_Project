@@ -5,6 +5,7 @@ import {Injectable} from '@angular/core';
 export class WebService {
   title_list: any;
   private titleID: any;
+  private genreID: any;
 
   constructor(private http: HttpClient) {
   }
@@ -17,6 +18,11 @@ export class WebService {
   }
   getSeries(page: number) {
     return this.http.get('http://localhost:5000/api/v1.0/series?pn=' + page);
+  }
+
+  getGenre(genre: any) {
+    this.genreID = genre
+    return this.http.get('http://localhost:5000/api/v1.0/titles/genre/' + genre);
   }
 
   getTitle(id: any) {
