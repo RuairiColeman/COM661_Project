@@ -1,10 +1,8 @@
-import json
-
 import bcrypt
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from pymongo import MongoClient
-from bson import ObjectId, json_util
+from bson import ObjectId
 from datetime import datetime
 import string
 import jwt
@@ -78,21 +76,28 @@ def admin_required(func):
             return func(*args, **kwargs)
         else:
             return make_response(jsonify({'message': 'Admin access required'}), 401)
+
     return admin_required_wrapper
 
 
 @app.route("/api/v1.0/titles", methods=["GET"])
 def show_all_titles():
-    page_num, page_size = 1, 10
-    if request.args.get('pn'):
-        page_num = int(request.args.get('pn'))
-    if request.args.get('ps'):
-        page_size = int(request.args.get('ps'))
-    page_start = (page_size * (page_num - 1))
+    page_size, page_start = pagination()
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "type": 1, "listed_in": 1}},
+        {"$project": {
+            "title": 1,
+            "type": 1,
+            "listed_in": 1,
+            "cast": 1,
+            "description": 1,
+            "director": 1,
+            "rating": 1,
+            "duration": 1,
+            "release_year": 1
+        }
+        },
         {"$skip": page_start},
         {"$limit": page_size}
     ]
@@ -122,22 +127,24 @@ def show_one_title(id):
 
 @app.route("/api/v1.0/movies", methods=["GET"])
 def show_all_movies():
-    page_num, page_size = 1, 10
-    if request.args.get('pn'):
-        page_num = int(request.args.get('pn'))
-    if request.args.get('ps'):
-        page_size = int(request.args.get('ps'))
-    page_start = (page_size * (page_num - 1))
+    page_size, page_start = pagination()
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "_id": 0, "type": 1}},
+        {"$project": {
+            "title": 1,
+            "type": 1,
+            "listed_in": 1,
+            "description": 1
+        }
+        },
         {"$match": {"type": "Movie"}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
 
     for title in media.aggregate(pipeline):
+        title['_id'] = str(title['_id'])
         data_to_return.append(title)
 
     return make_response(jsonify(data_to_return), 200)
@@ -145,12 +152,7 @@ def show_all_movies():
 
 @app.route("/api/v1.0/<string:genre>", methods=["GET"])
 def show_genre(genre):
-    page_num, page_size = 1, 10
-    if request.args.get('pn'):
-        page_num = int(request.args.get('pn'))
-    if request.args.get('ps'):
-        page_size = int(request.args.get('ps'))
-    page_start = (page_size * (page_num - 1))
+    page_size, page_start = pagination()
 
     data_to_return = []
     pipeline = [
@@ -165,27 +167,39 @@ def show_genre(genre):
 
     return make_response(jsonify(data_to_return), 200)
 
+
 @app.route("/api/v1.0/series", methods=["GET"])
 def show_all_series():
-    page_num, page_size = 1, 10
-    if request.args.get('pn'):
-        page_num = int(request.args.get('pn'))
-    if request.args.get('ps'):
-        page_size = int(request.args.get('ps'))
-    page_start = (page_size * (page_num - 1))
+    page_size, page_start = pagination()
 
     data_to_return = []
     pipeline = [
-        {"$project": {"title": 1, "_id": 0, "type": 1}},
+        {"$project": {
+            "title": 1,
+            "type": 1,
+            "listed_in": 1,
+            "description": 1
+        }
+        },
         {"$match": {"type": "TV Show"}},
         {"$skip": page_start},
         {"$limit": page_size}
     ]
 
     for title in media.aggregate(pipeline):
+        title['_id'] = str(title['_id'])
         data_to_return.append(title)
 
     return make_response(jsonify(data_to_return), 200)
+
+def pagination():
+    page_num, page_size = 1, 10
+    if request.args.get('pn'):
+        page_num = int(request.args.get('pn'))
+    if request.args.get('ps'):
+        page_size = int(request.args.get('ps'))
+    page_start = (page_size * (page_num - 1))
+    return page_size, page_start
 
 
 @app.route("/api/v1.0/titles", methods=["POST"])
@@ -250,7 +264,7 @@ def delete_title(id):
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["GET"])
 def show_all_reviews(id):
     if len(id) != 24 or not all(c in string.hexdigits for c in id):
-        return make_response(jsonify({"error": "Invalid business ID"}), 404)
+        return make_response(jsonify({"error": "Invalid title ID"}), 404)
 
     data_to_return = []
     title = media.find_one(
