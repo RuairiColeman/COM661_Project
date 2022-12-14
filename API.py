@@ -95,7 +95,8 @@ def show_all_titles():
             "director": 1,
             "rating": 1,
             "duration": 1,
-            "release_year": 1
+            "release_year": 1,
+            "count": {"$size": "$reviews"}
         }
         },
         {"$skip": page_start},
@@ -135,7 +136,8 @@ def show_all_movies():
             "title": 1,
             "type": 1,
             "listed_in": 1,
-            "description": 1
+            "description": 1,
+            "count": {"$size": "$reviews"}
         }
         },
         {"$match": {"type": "Movie"}},
@@ -181,7 +183,8 @@ def show_all_series():
             "title": 1,
             "type": 1,
             "listed_in": 1,
-            "description": 1
+            "description": 1,
+            "count": {"$size": "$reviews"}
         }
         },
         {"$match": {"type": "TV Show"}},
@@ -300,6 +303,7 @@ def get_one_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
+
 def add_new_review(id):
     now = datetime.datetime.now()
     new_review = {
