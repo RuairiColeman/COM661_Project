@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {WebService} from './web.service';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'titles',
@@ -11,7 +12,8 @@ export class TitlesComponent {
   title_list: any = [];
   page: number = 1;
 
-  constructor(public webService: WebService) {
+  reviews: any = []
+  constructor(public webService: WebService, private route: ActivatedRoute) {
   }
 
   ngOnInit() {
@@ -20,6 +22,7 @@ export class TitlesComponent {
       this.page = Number(sessionStorage['page']);
     }
     this.title_list = this.webService.getTitles(this.page);
+    this.reviews = this.webService.getReviews(this.route.snapshot.params['id']);
   }
 
   previousPage() {
@@ -35,4 +38,5 @@ export class TitlesComponent {
     sessionStorage['page'] = this.page;
     this.title_list = this.webService.getTitles(this.page);
   }
+
 }

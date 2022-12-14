@@ -15,7 +15,10 @@
           <div class="card-footer">
             {{ title.listed_in }}
           </div>
-          <button type="submit" class="btn btn-primary" [routerLink]="['/titles/'+ title._id]+'/reviews'">Reviews</button>
+          <div class="card-footer">
+            Number of Reviews: {{ title.count }}
+          </div>
+          <button type="submit" class="btn btn-primary" [routerLink]="['/titles/'+ title._id]+'/reviews'">Leave A Review</button>
         </div>
       </div>
     </div> <!-- col -->

@@ -44,7 +44,6 @@ export class ReviewsComponent {
   ngOnInit() {
     this.title_list = this.webService.getTitle(this.route.snapshot.params['id']);
     this.reviews = this.webService.getReviews(this.route.snapshot.params['id']);
-    this.count = this.webService.title_list.length
     this.reviewForm = this.formBuilder.group({
       name: ['', Validators.required],
       text: ['', Validators.required],

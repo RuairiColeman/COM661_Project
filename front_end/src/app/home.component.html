@@ -1,0 +1,5 @@
+<div style="padding: 100px">
+  <ul *ngIf = "authService.user$ | async as user">
+    <li>Hi {{ user.name }} !</li>
+ </ul>
+</div>

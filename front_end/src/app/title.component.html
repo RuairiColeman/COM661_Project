@@ -39,21 +39,27 @@
         </div>
       </div>
     </div> <!-- col -->
-    <div class = "col">
+    <div class="col">
       <div class="row">
         <div class="col-sm-12">
           <div class="card bg-light mb-3"
                style="width: 30rem; margin:auto"
-               *ngFor="let review of reviews | async">
-            <div class="card-header" >
-              {{ review.name }}
+               *ngFor="let review of reviews | async; count as count; index as i">
+            <div class="card-header">
+              review by {{ review.name }} on {{ review.date.substr(0, 10) | date }}
+            </div>
+            <div class="card-footer">
+              {{ review.text }}
             </div>
             <div class="card-footer">
               {{ review.stars }} stars
             </div>
-          </div>
+            <div class="card-footer">
+              Review {{i + 1}} of {{count}}
+            </div>
           </div>
         </div>
       </div>
+    </div>
   </div> <!-- row -->
 </div> <!-- container -->

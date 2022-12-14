@@ -40,6 +40,12 @@ export class WebService {
     postData.append("text", review.text);
     postData.append("stars", review.stars);
 
+     let today = new Date();
+ let todayDate = today.getFullYear() + "-" +
+ today.getMonth() + "-" +
+today.getDate();
+ postData.append("date", todayDate);
+
     return this.http.post('http://localhost:5000/api/v1.0/titles/' + this.titleID + '/reviews', postData);
   }
 }
