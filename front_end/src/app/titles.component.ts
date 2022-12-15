@@ -16,8 +16,6 @@ export class TitlesComponent {
   titleForm: any;
   reviews: any = []
 
-  titleID: any;
-
   constructor(public webService: WebService, private route: ActivatedRoute, private formBuilder: FormBuilder, public authService: AuthService) {
   }
 
@@ -78,8 +76,6 @@ export class TitlesComponent {
     deleteTitle(id: any) {
       this.webService.deleteTitle(id).subscribe(res => {
         this.webService.getTitle((item: { id: any; }) => item.id !== id)
-
-        location.reload()
     })
   };
 

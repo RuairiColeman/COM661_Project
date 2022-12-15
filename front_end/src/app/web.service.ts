@@ -70,4 +70,20 @@ export class WebService {
     this.titleID = id;
     return this.http.delete('http://localhost:5000/api/v1.0/titles/' + id)
   }
+
+  editTitle(id: any, title:any){
+    this.titleID = id;
+    let postData = new FormData();
+    postData.get(title.title);
+    postData.get(title.type);
+    postData.get(title.listed_in);
+    postData.get(title.description);
+    postData.get(title.rating);
+    postData.get(title.director);
+    postData.get(title.duration);
+    postData.get(title.cast);
+    postData.get(title.release_year);
+
+    return this.http.put('http://localhost:5000/api/v1.0/titles/' + id, postData);
+  }
 }
