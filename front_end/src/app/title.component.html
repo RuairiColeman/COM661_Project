@@ -6,6 +6,7 @@
              [routerLink]="['/titles/'+ title._id]">
           <div class="col">
             <div class="card-header">
+              <img src="{{title.image}}" style="width: 200px; height: 300px" alt="xs">
               {{ title.title }}
             </div>
           </div>
@@ -62,4 +63,96 @@
       </div>
     </div>
   </div> <!-- row -->
+
+ <div class="row">
+  <ng-container *ngIf="authService.isAuthenticated$ | async;
+        else loggedOut">
+    <form [formGroup]="titleForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title"
+               autocomplete="off"
+               class="form-control"
+               formControlName="title" [ngClass]="{ 'error':
+                   titleForm.controls.title.invalid &&
+                   titleForm.controls.title.touched}">
+      </div>
+      <div class="form-group">
+        <label for="type">Type</label>
+        <input type="text" id="type" name="type"
+               autocomplete="off"
+               class="form-control"
+               formControlName="type" [ngClass]="{ 'error':
+                   titleForm.controls.type.invalid &&
+                   titleForm.controls.type.touched}">
+      </div>
+      <div class="form-group">
+        <label for="listed_in">Genre</label>
+        <input type="text" id="listed_in" name="listed_in"
+               autocomplete="off"
+               class="form-control"
+               formControlName="listed_in" [ngClass]="{ 'error':
+                   titleForm.controls.listed_in.invalid &&
+                   titleForm.controls.listed_in.touched}">
+      </div>
+      <div class="form-group">
+        <label for="description">Description
+        </label>
+        <textarea id="description" rows="3" name="description"
+                  class="form-control"
+                  formControlName="description" [ngClass]="{ 'error':
+                   titleForm.controls.description.invalid &&
+                   titleForm.controls.description.touched}"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="rating">Rating</label>
+        <input type="text" id="rating" name="rating"
+               autocomplete="off"
+               class="form-control"
+               formControlName="rating">
+      </div>
+      <div class="form-group">
+        <label for="director">Director</label>
+        <input type="text" id="director" name="director"
+               autocomplete="off"
+               class="form-control"
+               formControlName="director">
+      </div>
+      <div class="form-group">
+        <label for="duration">Duration</label>
+        <input type="text" id="duration" name="duration"
+               autocomplete="off"
+               class="form-control"
+               formControlName="duration">
+      </div>
+      <div class="form-group">
+        <label for="cast">Cast</label>
+        <input type="text" id="cast" name="cast"
+               autocomplete="off"
+               class="form-control"
+               formControlName="cast">
+      </div>
+      <div class="form-group">
+        <label for="release_year">Release Year</label>
+        <input type="number" id="release_year" name="release_year"
+               autocomplete="off"
+               class="form-control"
+               formControlName="release_year">
+      </div>
+      <div class="form-group">
+        <label for="image">Image URL</label>
+        <input type="text" id="image" name="image"
+               autocomplete="off"
+               class="form-control"
+               formControlName="image">
+      </div>
+      <button type="submit"
+              class="btn btn-primary">Submit
+      </button>
+    </form>
+  </ng-container>
+  <ng-template #loggedOut>
+    <h2>Please login to add a title</h2>
+  </ng-template>
+</div>
 </div> <!-- container -->

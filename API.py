@@ -119,7 +119,25 @@ def show_one_title(id):
     title = media.aggregate([{"$match": {"_id": ObjectId(id)}}])
 
     if title is not None:
-        for title in media.aggregate(pipeline=[{"$match": {"_id": ObjectId(id)}}, {"$project": {"_id": 0}}]):
+        for title in media.aggregate(
+                pipeline=[{"$match": {"_id": ObjectId(id)}},
+                          {"$project": {
+                              "_id":1,
+                              "title": 1,
+                              "reviews": 1,
+                              "type": 1,
+                              "listed_in": 1,
+                              "cast": 1,
+                              "description": 1,
+                              "director": 1,
+                              "rating": 1,
+                              "duration": 1,
+                              "release_year": 1,
+                              "image": 1,
+                              "count": {"$size": "$reviews"}}
+                          }
+                          ]):
+            title['_id'] = str(title['_id'])
             for review in title["reviews"]:
                 review["_id"] = str(review["_id"])
             return make_response(jsonify([title]), 200)
@@ -267,7 +285,6 @@ def edit_title(id):
                     "type": request.form["type"],
                     "listed_in": request.form["listed_in"],
                     "description": request.form["description"],
-                    "reviews": [],
                     "rating": request.form["rating"],
                     "director": request.form["director"],
                     "duration": request.form["duration"],
@@ -372,8 +389,6 @@ def edit_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["DELETE"])
-@jwt_required
-@admin_required
 def delete_review(title_id, review_id):
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
@@ -383,7 +398,6 @@ def delete_review(title_id, review_id):
         media.update_one(
             {"_id": ObjectId(title_id)},
             {"$pull": {"reviews": {"_id": ObjectId(review_id)}}}
-
         )
         return make_response(jsonify({}), 204)
 

@@ -38,7 +38,8 @@ export class ReviewsComponent {
     public webService: WebService,
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
-    public authService: AuthService) {}
+    public authService: AuthService) {
+  }
 
   ngOnInit() {
     this.title_list = this.webService.getTitle(this.route.snapshot.params['id']);
@@ -49,4 +50,10 @@ export class ReviewsComponent {
       stars: 5
     });
   }
+
+  deleteReview(id: any) {
+    this.webService.deleteReview(id).subscribe(res => {
+      this.webService.getReview((item: { id: any; }) => item.id !== id)
+    })
+  };
 }

@@ -8,7 +8,7 @@ import {WebService} from './web.service';
 import {HttpClientModule} from '@angular/common/http';
 import {RouterModule} from '@angular/router';
 import {ReviewsComponent} from './reviews.component';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AuthModule} from '@auth0/auth0-angular';
 import {NavComponent} from './nav.component';
 import {TitleComponent} from './title.component'
@@ -56,7 +56,7 @@ var routes: any = [
     AuthModule.forRoot({
       domain: 'dev-58skmbsmsgsdjvk7.us.auth0.com',
       clientId: 'jQehCJGU8YwrWgOdwr6rxpsAiBP53cqA'
-    })
+    }), FormsModule
   ],
   providers: [WebService],
   bootstrap: [AppComponent]

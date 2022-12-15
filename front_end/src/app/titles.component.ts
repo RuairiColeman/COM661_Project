@@ -34,7 +34,8 @@ export class TitlesComponent {
       director:'',
       duration:'',
       cast:'',
-      release_year:''
+      release_year:'',
+      image:''
     });
 
     this.title_list = this.webService.getTitles(this.page);
@@ -78,5 +79,4 @@ export class TitlesComponent {
         this.webService.getTitle((item: { id: any; }) => item.id !== id)
     })
   };
-
 }
