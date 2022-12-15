@@ -14,7 +14,6 @@ export class ReviewsComponent {
   reviewForm: any;
   title_list: any = [];
   reviews: any = [];
-  count: any;
 
   onSubmit() {
     this.webService.postReview(this.reviewForm.value).subscribe((response: any) => {

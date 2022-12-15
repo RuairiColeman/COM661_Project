@@ -11,7 +11,6 @@ import {ActivatedRoute} from '@angular/router';
 export class TitleComponent {
   title_list: any = [];
   reviews: any = []
-
   constructor(public webService: WebService, private route: ActivatedRoute) {
   }
 

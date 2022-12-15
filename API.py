@@ -154,7 +154,6 @@ def show_all_movies():
 
 @app.route("/api/v1.0/titles/genre/<string:genre>", methods=["GET"])
 def show_genre(genre):
-
     data_to_return = []
     pipeline = [
         {"$project": {
@@ -164,7 +163,7 @@ def show_genre(genre):
             "description": 1}
         },
         {"$match": {"listed_in": genre}
-    }]
+         }]
 
     for title in media.aggregate(pipeline):
         title['_id'] = str(title['_id'])
@@ -198,6 +197,7 @@ def show_all_series():
 
     return make_response(jsonify(data_to_return), 200)
 
+
 def pagination():
     page_num, page_size = 1, 10
     if request.args.get('pn'):
@@ -209,10 +209,16 @@ def pagination():
 
 
 @app.route("/api/v1.0/titles", methods=["POST"])
-@jwt_required
 def add_title():
-    if "title" in request.form and "type" in request.form and "listed_in" in request.form \
-            and "description" in request.form:
+    if "title" in request.form \
+            and "type" in request.form \
+            and "listed_in" in request.form \
+            and "description" in request.form \
+            and "rating" in request.form \
+            and "director" in request.form \
+            and "duration" in request.form \
+            and "cast" in request.form \
+            and "release_year" in request.form:
         now = datetime.datetime.now()
         new_title = {
             "title": request.form["title"],
@@ -220,7 +226,12 @@ def add_title():
             "date_added": now.strftime("%d %B, %Y"),
             "listed_in": request.form["listed_in"],
             "description": request.form["description"],
-            "reviews": []
+            "reviews": [],
+            "rating": request.form["rating"],
+            "director": request.form["director"],
+            "duration": request.form["duration"],
+            "cast": request.form["cast"],
+            "release_year": request.form["release_year"]
         }
         new_title_id = media.insert_one(new_title)
         new_title_link = "http://localhost:5000/api/v1.0/titles/" + str(new_title_id.inserted_id)
@@ -257,8 +268,8 @@ def edit_title(id):
 
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["DELETE"])
-@jwt_required
-@admin_required
+
+
 def delete_title(id):
     result = media.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 1:
@@ -303,7 +314,6 @@ def get_one_review(title_id, review_id):
 
 
 @app.route("/api/v1.0/titles/<string:id>/reviews", methods=["POST"])
-
 def add_new_review(id):
     now = datetime.datetime.now()
     new_review = {
