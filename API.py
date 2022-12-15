@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = 'mysecret'
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 db = client.mydb
-media = db.media
+media = db.notflix
 users = db.users
 blacklist = db.blacklist
 
@@ -96,6 +96,7 @@ def show_all_titles():
             "rating": 1,
             "duration": 1,
             "release_year": 1,
+            "image": 1,
             "count": {"$size": "$reviews"}
         }
         },
@@ -137,6 +138,7 @@ def show_all_movies():
             "type": 1,
             "listed_in": 1,
             "description": 1,
+            "image": 1,
             "count": {"$size": "$reviews"}
         }
         },
@@ -160,7 +162,8 @@ def show_genre(genre):
             "title": 1,
             "type": 1,
             "listed_in": 1,
-            "description": 1}
+            "description": 1,
+            "image": 1}
         },
         {"$match": {"listed_in": genre}
          }]
@@ -183,6 +186,7 @@ def show_all_series():
             "type": 1,
             "listed_in": 1,
             "description": 1,
+            "image": 1,
             "count": {"$size": "$reviews"}
         }
         },
@@ -218,7 +222,8 @@ def add_title():
             and "director" in request.form \
             and "duration" in request.form \
             and "cast" in request.form \
-            and "release_year" in request.form:
+            and "release_year" in request.form \
+            and "image" in request.form:
         now = datetime.datetime.now()
         new_title = {
             "title": request.form["title"],
@@ -231,7 +236,8 @@ def add_title():
             "director": request.form["director"],
             "duration": request.form["duration"],
             "cast": request.form["cast"],
-            "release_year": request.form["release_year"]
+            "release_year": request.form["release_year"],
+            "image": request.form["image"]
         }
         new_title_id = media.insert_one(new_title)
         new_title_link = "http://localhost:5000/api/v1.0/titles/" + str(new_title_id.inserted_id)
@@ -242,10 +248,17 @@ def add_title():
 
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["PUT"])
-@jwt_required
 def edit_title(id):
-    if "title" in request.form and "type" in request.form and "listed_in" in request.form \
-            and "description" in request.form:
+    if "title" in request.form \
+            and "type" in request.form \
+            and "listed_in" in request.form \
+            and "description" in request.form \
+            and "rating" in request.form \
+            and "director" in request.form \
+            and "duration" in request.form \
+            and "cast" in request.form \
+            and "release_year" in request.form \
+            and "image" in request.form:
         result = media.update_one(
             {"_id": ObjectId(id)},
             {
@@ -254,7 +267,13 @@ def edit_title(id):
                     "type": request.form["type"],
                     "listed_in": request.form["listed_in"],
                     "description": request.form["description"],
-                    "reviews": []
+                    "reviews": [],
+                    "rating": request.form["rating"],
+                    "director": request.form["director"],
+                    "duration": request.form["duration"],
+                    "cast": request.form["cast"],
+                    "release_year": request.form["release_year"],
+                    "image": request.form["image"]
                 }
             }
         )
@@ -268,8 +287,6 @@ def edit_title(id):
 
 
 @app.route("/api/v1.0/titles/<string:id>", methods=["DELETE"])
-
-
 def delete_title(id):
     result = media.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 1:
