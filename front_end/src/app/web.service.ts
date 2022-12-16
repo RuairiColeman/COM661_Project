@@ -38,10 +38,17 @@ export class WebService {
   }
 
   getReview(r_id: any) {
+    this.reviewID = r_id
     return this.http.get('http://localhost:5000/api/v1.0/titles/' + this.titleID + '/reviews/' + r_id);
   }
 
   postReview(review: any) {
+    let formData = this.reviewForm(review);
+
+    return this.http.post('http://localhost:5000/api/v1.0/titles/' + this.titleID + '/reviews', formData);
+  }
+
+  private reviewForm(review: any) {
     let formData = new FormData();
     formData.append("name", review.name);
     formData.append("text", review.text);
@@ -50,10 +57,12 @@ export class WebService {
     let today = new Date();
     let todayDate = today.getFullYear() + "-" +
       today.getMonth() + "-" +
-      today.getDate();
+      today.getDate() +
+      today.getHours() + "-" +
+      today.getMinutes() + "-" +
+      today.getSeconds();
     formData.append("date", todayDate);
-
-    return this.http.post('http://localhost:5000/api/v1.0/titles/' + this.titleID + '/reviews', formData);
+    return formData;
   }
 
   addTitle(title: any) {
@@ -91,4 +100,10 @@ export class WebService {
     this.reviewID = r_id;
     return this.http.delete('http://localhost:5000/api/v1.0/titles/' + this.titleID + '/reviews/' + r_id)
   }
+  updateReview(review: any) {
+    let formData = this.reviewForm(review);
+
+    return this.http.put('http://localhost:5000/api/v1.0/titles/'+ this.titleID + '/reviews/' +  this.reviewID, formData);
+  }
+
 }

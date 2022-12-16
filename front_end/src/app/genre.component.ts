@@ -3,7 +3,7 @@ import {WebService} from './web.service';
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
-  selector: 'genre',
+  selector: 'titles',
   templateUrl: './genre.component.html',
   styleUrls: ['./genre.component.css']
 })

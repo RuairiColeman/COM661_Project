@@ -15,6 +15,7 @@ import {TitleComponent} from './title.component'
 import {MoviesComponent} from './movies.component';
 import {SeriesComponent} from './series.component';
 import {GenreComponent} from './genre.component';
+import {ReviewComponent} from './review.component';
 
 var routes: any = [
   {
@@ -44,12 +45,16 @@ var routes: any = [
   {
     path: 'titles/genre/:genre',
     component: GenreComponent
-  }
+  },
+  {
+    path: 'titles/:id/reviews/:r_id',
+    component: ReviewComponent
+  },
 ];
 
 @NgModule({
   declarations: [
-    AppComponent, TitlesComponent, HomeComponent, ReviewsComponent, NavComponent, TitleComponent, MoviesComponent, SeriesComponent, GenreComponent
+    AppComponent, TitlesComponent, HomeComponent, ReviewsComponent, NavComponent, TitleComponent, MoviesComponent, SeriesComponent, GenreComponent, ReviewComponent
   ],
   imports: [
     BrowserModule, HttpClientModule, RouterModule.forRoot(routes), ReactiveFormsModule,

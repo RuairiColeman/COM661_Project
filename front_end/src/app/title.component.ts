@@ -15,7 +15,6 @@ export class TitleComponent {
   title_list: any = [];
   id: any;
   reviews: any = [];
-
   titleForm: any;
   constructor(public webService: WebService, private route: ActivatedRoute, private formBuilder: FormBuilder, public authService: AuthService) {
   }

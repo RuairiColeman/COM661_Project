@@ -56,4 +56,5 @@ export class ReviewsComponent {
       this.webService.getReview((item: { id: any; }) => item.id !== id)
     })
   };
+
 }

@@ -221,7 +221,7 @@ def show_all_series():
 
 
 def pagination():
-    page_num, page_size = 1, 10
+    page_num, page_size = 1, 5
     if request.args.get('pn'):
         page_num = int(request.args.get('pn'))
     if request.args.get('ps'):
@@ -319,7 +319,7 @@ def show_all_reviews(id):
 
     data_to_return = []
     title = media.find_one(
-        {"_id": ObjectId(id)}, {"reviews": 1, "_id": 0}
+        {"_id": ObjectId(id)}, {"reviews": 1, "_id": 1}
     )
 
     for review in title["reviews"]:
@@ -338,7 +338,7 @@ def get_one_review(title_id, review_id):
     elif len(review_id) != 24 or not all(c in string.hexdigits for c in review_id):
         return make_response(jsonify({"error": "bad review ID"}), 404)
     else:
-        title = media.find_one({"reviews._id": ObjectId(review_id)}, {"_id": 0, "reviews.$": 1})
+        title = media.find_one({"reviews._id": ObjectId(review_id)}, {"_id": 1, "reviews.$": 1})
 
         if title is not None:
             title['reviews'][0]['_id'] = str(title['reviews'][0]['_id'])
@@ -368,7 +368,6 @@ def add_new_review(id):
 
 
 @app.route("/api/v1.0/titles/<string:title_id>/reviews/<string:review_id>", methods=["PUT"])
-@jwt_required
 def edit_review(title_id, review_id):
     if len(title_id) != 24 or not all(c in string.hexdigits for c in title_id):
         return make_response(jsonify({"error": "Invalid title ID"}), 404)
@@ -376,6 +375,7 @@ def edit_review(title_id, review_id):
         return make_response(jsonify({"error": "bad review ID"}), 404)
     else:
         edited_review = {
+            "reviews.$.name": request.form["name"],
             "reviews.$.text": request.form["text"],
             "reviews.$.stars": request.form["stars"]
         }
