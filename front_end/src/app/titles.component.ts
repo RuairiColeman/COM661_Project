@@ -16,7 +16,6 @@ export class TitlesComponent {
   titleForm: any;
   reviews: any = [];
 
-  pageOfItems: Array<any> | undefined;
 
   constructor(public webService: WebService, private route: ActivatedRoute, private formBuilder: FormBuilder, public authService: AuthService) {
   }

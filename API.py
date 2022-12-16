@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = 'mysecret'
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 db = client.mydb
-media = db.notflix
+media = db.finalnotflix
 users = db.users
 blacklist = db.blacklist
 
@@ -181,7 +181,8 @@ def show_genre(genre):
             "type": 1,
             "listed_in": 1,
             "description": 1,
-            "image": 1}
+            "image": 1,
+            "count": {"$size": "$reviews"}}
         },
         {"$match": {"listed_in": genre}
          }]

@@ -2,21 +2,25 @@
   <div class="row">
     <div class="col">
       <div *ngFor="let title of genre_list | async">
-        <div class="card text-white bg-primary mb-3" style="cursor: pointer"
-             [routerLink]="['/titles/'+ title._id]">
-          <div class="col">
-            <img src="{{title.image}}" style="width: 200px; height: 300px">
-            <div class="card-header">
-              {{ title.title }}
+        <div class="card mb-3" style="max-width: 1000px;cursor: pointer" [routerLink]="['/titles/'+ title._id]">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <img src="{{title.image}}" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{title.title}}</h5>
+                <p class="card-text">{{title.description}}</p>
+                <p class="card-text">Genre: {{title.listed_in}}</p>
+                <p class="card-text"><small class="text-muted"
+                                            [routerLink]="['/titles/'+ title._id]+'/reviews'">{{title.count}} Reviews
+                  Available</small></p>
+                <ng-container *ngIf="authService.isAuthenticated$ | async;">
+                <button type="button" (click)="deleteTitle(title._id)" style="padding: 15px 30px;" class="btn btn-danger btn-lg">Delete</button>
+                </ng-container>
+              </div>
             </div>
           </div>
-          <div class="card-body">
-            {{ title.description }}
-          </div>
-          <div class="card-footer" >
-            {{ title.listed_in }}
-          </div>
-          <button type="submit" class="btn btn-primary" [routerLink]="['/titles/'+ title._id]+'/reviews'">Reviews</button>
         </div>
       </div>
     </div> <!-- col -->
