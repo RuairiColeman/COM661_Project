@@ -14,7 +14,9 @@ export class TitlesComponent {
   title_list: any = [];
   page: number = 1;
   titleForm: any;
-  reviews: any = []
+  reviews: any = [];
+
+  pageOfItems: Array<any> | undefined;
 
   constructor(public webService: WebService, private route: ActivatedRoute, private formBuilder: FormBuilder, public authService: AuthService) {
   }
@@ -66,6 +68,17 @@ export class TitlesComponent {
       sessionStorage['page'] = this.page;
       this.title_list = this.webService.getTitles(this.page);
     }
+  }
+
+  lastPage() {
+    this.page = 39;
+    sessionStorage['page'] = this.page;
+    this.title_list = this.webService.getTitles(this.page);
+  }
+  firstPage() {
+    this.page = 1;
+    sessionStorage['page'] = this.page;
+    this.title_list = this.webService.getTitles(this.page);
   }
 
   nextPage() {

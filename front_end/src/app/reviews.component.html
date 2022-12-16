@@ -3,20 +3,17 @@
     <h1>{{title.title}}</h1>
     <div class="row">
       <div class="col-sm-12">
-        <div class="card bg-light mb-3"
-             style="width: 30rem; margin:auto"
-             *ngFor="let text of reviews | async;">
-          <div class="card-header">
-            review by {{ text._id }} on {{ text.date.substr(0, 10) | date }}
+        <div class="card" style="width: 18rem;margin-bottom: 50px; cursor: pointer" *ngFor="let text of reviews | async;" [routerLink]="['/titles/'+ title._id+'/reviews/'+ text._id]">
+          <div class="card-body" >
+            <h3 class="card-title">{{text.name}}</h3>
+            <h6 class="card-subtitle mb-2 text-muted">{{text.stars}}/5</h6>
+            <h6 class="card-subtitle mb-2 text-muted">Reviewed on: {{text.date}}</h6>
+
+            <p class="card-text">{{text.text}}</p>
+            <ng-container *ngIf="authService.isAuthenticated$ | async;">
+                <button type="button" (click)="deleteReview(text._id)" class="btn btn-danger">Delete</button>
+            </ng-container>
           </div>
-          <div class="card-body">
-            {{ text.text }}
-          </div>
-          <div class="card-footer">
-            {{ text.stars }} stars
-          </div>
-           <button type="button" (click)="deleteReview(text._id)" class="btn btn-danger">Delete</button>
-          <a [routerLink]="['/titles/'+ title._id+'/reviews/'+ text._id]"><button type="button" class="btn btn-primary">View Review</button></a>
         </div>
       </div>
     </div>
@@ -24,48 +21,48 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <ng-container *ngIf = "authService.isAuthenticated$ | async;
+        <ng-container *ngIf="authService.isAuthenticated$ | async;
         else loggedOut">
-        <h2>Please review this business</h2>
-        <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name"
-                   autocomplete="off"
-                   class="form-control"
-                   formControlName="name" [ngClass]="{ 'error':
+          <h2>Please review this Title</h2>
+          <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name"
+                     autocomplete="off"
+                     class="form-control"
+                     formControlName="name" [ngClass]="{ 'error':
                    reviewForm.controls.name.invalid &&
                    reviewForm.controls.name.touched}">
-          </div>
-          <div class="form-group">
-            <label for="text">Please leave your review below
-            </label>
-            <textarea id="text" rows="3" name="text"
-                      class="form-control"
-                      formControlName="text" [ngClass]="{ 'error':
+            </div>
+            <div class="form-group">
+              <label for="text">Please leave your review below
+              </label>
+              <textarea id="text" rows="3" name="text"
+                        class="form-control"
+                        formControlName="text" [ngClass]="{ 'error':
                    reviewForm.controls.name.invalid &&
                    reviewForm.controls.name.touched}"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="stars">Please provide a rating
-              (5 = best)</label>
-            <select id="stars" name="stars"
-                    class="form-control"
-                    formControlName="stars">
-              <option value="1">1 star</option>
-              <option value="2">2 stars</option>
-              <option value="3">3 stars</option>
-              <option value="4">4 stars</option>
-              <option value="5">5 stars</option>
-            </select>
-          </div>
-          <button type="submit"
-                  class="btn btn-primary">Submit
-          </button>
-        </form>
+            </div>
+            <div class="form-group">
+              <label for="stars">Please provide a rating
+                (5 = best)</label>
+              <select id="stars" name="stars"
+                      class="form-control"
+                      formControlName="stars">
+                <option value="1">1 star</option>
+                <option value="2">2 stars</option>
+                <option value="3">3 stars</option>
+                <option value="4">4 stars</option>
+                <option value="5">5 stars</option>
+              </select>
+            </div>
+            <button type="submit"
+                    class="btn btn-primary">Submit
+            </button>
+          </form>
         </ng-container>
         <ng-template #loggedOut>
-          <h2>Please login to review a title</h2>
+          <h2>Please login to review this title</h2>
         </ng-template>
       </div>
     </div>

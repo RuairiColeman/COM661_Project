@@ -2,33 +2,47 @@
   <div class="row">
     <div class="col">
       <div *ngFor="let title of movie_list | async">
-        <div class="card text-white bg-primary mb-3" style="cursor: pointer"
-             [routerLink]="['/titles/'+ title._id]">
-          <div class="col">
-            <img src="{{title.image}}" style="width: 200px; height: 300px">
-            <div class="card-header">
-              {{ title.title }}
+        <div class="card mb-3" style="max-width: 1000px;cursor: pointer" [routerLink]="['/titles/'+ title._id]">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <img src="{{title.image}}" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{title.title}}</h5>
+                <p class="card-text">{{title.description}}</p>
+                <p class="card-text">Genre: {{title.listed_in}}</p>
+                <p class="card-text"><small class="text-muted"
+                                            [routerLink]="['/titles/'+ title._id]+'/reviews'">{{title.count}} Reviews
+                  Available</small></p>
+                <ng-container *ngIf="authService.isAuthenticated$ | async;">
+                  <button type="button" (click)="deleteTitle(title._id)" style="padding: 15px 30px;"
+                          class="btn btn-danger btn-lg">Delete
+                  </button>
+                </ng-container>
+              </div>
             </div>
           </div>
-          <div class="card-body">
-            {{ title.description }}
-          </div>
-          <div class="card-footer">
-            {{ title.listed_in }}
-          </div>
-          <div class="card-footer">
-            Number of Reviews: {{ title.count }}
-          </div>
-          <button type="submit" class="btn btn-primary" [routerLink]="['/titles/'+ title._id]+'/reviews'">Leave A
-            Review
-          </button>
         </div>
       </div>
     </div> <!-- col -->
   </div> <!-- row -->
-  <div class="btn-group">
-    <button class="btn btn-outline-primary" (click)="previousPage()">Previous</button>
-    <button class="btn btn-outline-primary">Add Title</button>
-    <button class="btn btn-outline-primary" (click)="nextPage()">Next</button>
-  </div>
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      <li class="page-item">
+        <a class="page-link" (click)="firstPage()" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only"></span>
+        </a>
+      </li>
+      <li class="page-item"><a class="page-link" (click)="previousPage()">Previous</a></li>
+      <li class="page-item"><a class="page-link" (click)="nextPage()">Next</a></li>
+      <li class="page-item">
+        <a class="page-link" (click)="lastPage()" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only"></span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 </div> <!-- container -->
