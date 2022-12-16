@@ -11,7 +11,8 @@
               <div class="card-body">
                 <h5 class="card-title">{{title.title}}</h5>
                 <p class="card-text">{{title.description}}</p>
-                <a routerLink="/titles/genre/{{title.listed_in}}">Genre: {{title.listed_in}}</a>
+                <p class="card-text">{{title.type}}</p>
+                <a class="card-text" routerLink="/titles/genre/{{title.listed_in}}">Genre: {{title.listed_in}}</a>
                 <p class="card-text"><small class="text-muted"[routerLink]="['/titles/'+ title._id]+'/reviews'" style="cursor: pointer">{{title.count}} Reviews Available</small></p>
                 <ng-container *ngIf="authService.isAuthenticated$ | async;">
                 <button type="button" (click)="deleteTitle(title._id)" style="padding: 15px 30px;" class="btn btn-danger btn-lg">Delete</button>
