@@ -37,7 +37,7 @@ export class MoviesComponent {
   }
 
   lastPage() {
-    this.page = 22;
+    this.page = 11;
     sessionStorage['page'] = this.page;
     this.movie_list = this.webService.getMovies(this.page);
   }

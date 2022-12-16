@@ -37,7 +37,7 @@ export class SeriesComponent {
   }
 
   lastPage() {
-    this.page = 17;
+    this.page = 9;
     sessionStorage['page'] = this.page;
     this.series_list = this.webService.getSeries(this.page);
   }

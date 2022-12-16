@@ -70,7 +70,7 @@ export class TitlesComponent {
   }
 
   lastPage() {
-    this.page = 39;
+    this.page = 20;
     sessionStorage['page'] = this.page;
     this.title_list = this.webService.getTitles(this.page);
   }
